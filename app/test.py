@@ -1,3 +1,7 @@
+''''
+This is a test module
+'''
+
 import time
 
-time.datetime
+time.sleep(1)
