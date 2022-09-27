@@ -38,27 +38,60 @@ jobs:
       #- name: Test with pytest
       #  run: pytest
 
+  # how to push to docker hub
+  # publish:
+  #   runs-on: ubuntu-latest
+  #   needs: prep
+
+  #   steps:
+  #     - name: Check out repo
+  #       uses: actions/checkout@v3
+
+  #     - name: Set env
+  #       run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
+
+      # - name: Login in docker hub
+      #   uses: docker/login-action@v2
+      #   with:
+      #     username: ${{ secrets.DOCKERHUB_USERNAME }}
+      #     password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      # - name: "Build and push image"
+      #   uses: docker/build-push-action@v3
+      #   with:
+      #     push: true
+      #     tags: ${{ secrets.DOCKERHUB_USERNAME }}/ci-test:latest,${{ secrets.DOCKERHUB_USERNAME }}/ci-test:${{ env.RELEASE_VERSION }}
+
+    # how to push to google container registry
+
   publish:
     runs-on: ubuntu-latest
     needs: prep
+    env:
+      IMAGE_NAME: gcr.io/${{ secrets.GCP_PROJECT_ID }}/ci-test
 
     steps:
-      - name: Check out repo
-        uses: actions/checkout@v3
+      - name: Login
+        uses: google-github-actions/setup-gcloud@v0
+        with:
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+          service_account_email: ${{ secrets.GCP_EMAIL }}
+          service_account_key: ${{ secrets.GCP_ACC_KEY }}
+
+      - name: Configure Docker
+        run: gcloud auth configure-docker --quiet
+
+      - name: Checkout repository
+        uses: actions/checkout@v2
 
       - name: Set env
         run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
 
-      - name: Login in docker hub
-        uses: docker/login-action@v2
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Build Docker image
+        run: docker build . -t $IMAGE_NAME:${{ env.RELEASE_VERSION }}
 
-      - name: "Build and push image"
-        uses: docker/build-push-action@v3
-        with:
-          push: true
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/ci-test:latest,${{ secrets.DOCKERHUB_USERNAME }}/ci-test:${{ env.RELEASE_VERSION }}
+      - name: Push Docker image
+        run: docker push $IMAGE_NAME:${{ env.RELEASE_VERSION }}
 
-  #deploy
+      - name: Deploy Docker image
+        run: gcloud run deploy ${{ secrets.GCP_PROJECT_ID }} --image $IMAGE_NAME:${{ env.RELEASE_VERSION }} --region us-central1 --platform managed --port=5000
