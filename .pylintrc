@@ -1,0 +1,13 @@
+[MASTER]
+disable =
+    C0116, # Missing function or method docstring - Documentation only where it is needed
+    C0115, # Missing class docstring - Documentation only where it is needed
+    C0114, # Missing module docstring - Documentation only where it is needed
+    R0801, # Similar lines - Not possible to have this only in portions of code. That's why it is only here, but should always be kept in mind this principle.
+    R0903, # Too few public method
+    R0913, # Too many arguments - The file operations require many arguments
+    R0902, # Too many instance attributes
+    C0301, # Line too long
+    W0102, # Dangerous default value [] as argument
+    R0201, # No self use
+    W0108,
