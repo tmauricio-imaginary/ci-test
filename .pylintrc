@@ -10,4 +10,4 @@ disable =
     C0301, # Line too long
     W0102, # Dangerous default value [] as argument
     R0201, # No self use
-    W0108,
+    W0108, # unecessary-lambda
