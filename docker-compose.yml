@@ -1,0 +1,20 @@
+version: "3.9"
+
+services:
+  nginx:
+    image: nginx:latest
+    ports:
+      - 80:80
+      - 443:443
+    networks:
+      - internal
+
+  backend:
+    image: tmauricioic/ci-test:latest
+    ports:
+      - 5000
+    networks:
+      - internal
+
+networks:
+  internal:
